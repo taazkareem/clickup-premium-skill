@@ -1,4 +1,4 @@
-# ClickUp MCP Premium Skill for OpenClaw
+# ClickUp MCP Premium Skill for OpenClaw (WIP)
 
 This repository contains the `clickup-premium` skill for OpenClaw, designed to work with the [ClickUp MCP Server - Premium](https://github.com/taazkareem/clickup-mcp-server).
 
