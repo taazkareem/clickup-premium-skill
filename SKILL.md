@@ -5,53 +5,46 @@ description: "Advanced ClickUp integration for task management, time tracking, a
 
 # ClickUp MCP Premium
 
-This skill enables deep integration with ClickUp using the premium MCP server. It supports both standalone usage and multi-agent environments where different agents require isolated credentials.
+This skill enables deep integration with ClickUp using the premium MCP server. It is optimized for multi-agent environments using a **Dynamic stdio Mode** that ensures credential isolation.
 
-## Setup & Configuration
+## Setup & Multi-Agent Configuration
 
-### 1. Simple Configuration (Standalone)
-If you are the only user of this skill, add the server globally:
-```bash
-mcporter config add clickup-premium npm:clickup-mcp-server \
-  --env CLICKUP_API_KEY=<YOUR_API_KEY> \
-  --env CLICKUP_TEAM_ID=<YOUR_TEAM_ID> \
-  --env CLICKUP_MCP_LICENSE_KEY=<YOUR_LICENSE_KEY>
-```
-Then call tools using: `mcporter call clickup-premium.get_tasks`
-
-### 2. Multi-Agent Configuration (Isolated)
-To support multiple agents with different permissions, use **Dynamic Mode**. 
-
-**Required Credentials (`TOOLS.md` or Environment):**
+### 1. Agent-Specific Credentials (`TOOLS.md`)
+Every agent using this skill should have its specific credentials stored in its local `TOOLS.md` file:
 - `CLICKUP_API_KEY`: Personal API Key.
-- `CLICKUP_TEAM_ID`: The specific workspace ID.
+- `CLICKUP_TEAM_ID`: The specific workspace/team ID.
 - `CLICKUP_MCP_LICENSE_KEY`: The premium license key.
-- `ENABLED_TOOLS`: (Optional) Comma-separated list of tools to enable (e.g., `get_tasks,create_task`) to minimize token overhead.
+- `ENABLED_TOOLS`: (Optional) Comma-separated list of tools to enable.
 
-**Dynamic Call Pattern:**
+### 2. Calling Tools (The Launcher)
+To ensure isolation and proper environment loading, **ALWAYS** use the included launcher script. This script automatically reads your `TOOLS.md` and injects the variables into a one-shot `mcporter` session.
+
+**Usage Pattern:**
 ```bash
-mcporter call --stdio "npx -y @taazkareem/clickup-mcp-server" \
-  --env CLICKUP_API_KEY=<API_KEY> \
-  --env CLICKUP_TEAM_ID=<TEAM_ID> \
-  --env CLICKUP_MCP_LICENSE_KEY=<LICENSE_KEY> \
-  --env ENABLED_TOOLS=<ENABLED_TOOLS> \
-  <TOOL_NAME> <ARGS>
+python <skill_path>/scripts/call.py <TOOL_NAME> [ARGS]
+```
+
+**Example:**
+```bash
+python /Users/admin/.openclaw/skills/clickup-premium/scripts/call.py get_tasks teamId=9013667057
 ```
 
 ## Best Practices
 
 ### 1. Hierarchy Discovery
-Before creating tasks, use `get_workspace_hierarchy` to understand the structure of Spaces and Folders. This ensures you are targeting the correct `listId`.
+Before creating tasks, use `get_workspace_hierarchy` via the launcher to understand the structure of Spaces and Folders.
 
 ### 2. Smart Task Lookup
-The premium server supports automatic name resolution. You can provide a task **Name** directly to tools like `get_task` or `update_task` instead of searching for a numeric ID first.
+The premium server supports automatic name resolution. You can provide a task **Name** directly to tools instead of searching for a numeric ID first.
 
-### 3. Tool Minimization
-When spawning specialized sub-agents, use the `ENABLED_TOOLS` environment variable to expose only the tools necessary for their specific role (e.g., only "Time Tracking" for an operations agent).
+### 3. Tool Minimization (`ENABLED_TOOLS`)
+Specialized agents should list only required tools in their `TOOLS.md` to minimize token overhead and increase reliability.
 
 ## Example Workflows
 
-### Processing a Task
-1. Get task details (returns markdown description).
-2. Add a progress comment using `create_task_comment`.
-3. Log time spent using `add_time_entry`.
+### Maya: Processing a New Lead
+1. Run `python <skill_path>/scripts/call.py create_task listId=... name="New Client"`
+2. The script handles the `npx` spawn and `TOOLS.md` parsing automatically.
+
+### Alaric: Status Update
+1. Run `python <skill_path>/scripts/call.py create_task_comment taskId=... comment="Task in progress"`
