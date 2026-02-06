@@ -5,56 +5,60 @@ description: "Advanced ClickUp integration for task management, time tracking, a
 
 # ClickUp MCP Premium
 
-This skill enables deep integration with ClickUp using the premium MCP server.
+This skill enables deep integration with ClickUp using the premium MCP server. It is designed for multi-agent environments where different agents may require different credentials or tool sets.
 
-## Setup & Configuration
+## Setup & Multi-Agent Configuration
 
-If the `clickup-premium` server (or an existing `ClickUp_npm` server) is not yet configured or needs update, guide the user through the setup:
+To support multiple agents with different workspaces or permissions, use the **Dynamic stdio Mode**. 
 
-1. **Required Credentials**:
-   - `CLICKUP_API_KEY`: Personal API Key (starts with `pk_`).
-   - `CLICKUP_TEAM_ID`: Your Team/Workspace ID (found in URL after `/t/`).
-   - `CLICKUP_MCP_LICENSE_KEY`: Your premium license key.
+### 1. Agent-Specific Credentials (`TOOLS.md`)
+Every agent using this skill must check their local `TOOLS.md` for the following:
+- `CLICKUP_API_KEY`: The personal API key for this agent's account.
+- `CLICKUP_TEAM_ID`: The specific workspace/team ID this agent should manage.
+- `CLICKUP_MCP_LICENSE_KEY`: The premium license key.
+- `ENABLED_TOOLS`: (Optional) A comma-separated list of tools to enable (e.g., `get_tasks,create_task`). Use this to minimize token overhead for specialized agents.
 
-2. **Configuration Command**:
-   Run the following to add the server:
-   ```bash
-   mcporter config add clickup-premium npm:clickup-mcp-server \
-     --env CLICKUP_API_KEY=<API_KEY> \
-     --env CLICKUP_TEAM_ID=<TEAM_ID> \
-     --env CLICKUP_MCP_LICENSE_KEY=<LICENSE_KEY> \
-     --env ENABLE_SSE=true \
-     --env DOCUMENT_SUPPORT=true
-   ```
+### 2. Calling the Tool Dynamically
+If local credentials exist in `TOOLS.md`, the agent **must** use the `--stdio` and `--env` flags instead of a named server. This ensures "one-shot" isolation without needing to restart the gateway.
+
+**Execution Pattern:**
+```bash
+mcporter call --stdio "npx -y @taazkareem/clickup-mcp-server" \
+  --env CLICKUP_API_KEY=<FROM_TOOLS_MD> \
+  --env CLICKUP_TEAM_ID=<FROM_TOOLS_MD> \
+  --env CLICKUP_MCP_LICENSE_KEY=<FROM_TOOLS_MD> \
+  --env ENABLED_TOOLS=<FROM_TOOLS_MD_OR_ROLE> \
+  <TOOL_NAME> <ARGS>
+```
+
+### 3. Global Fallback
+If no local credentials are found in `TOOLS.md`, use the global named server:
+```bash
+mcporter call ClickUp.<TOOL_NAME> <ARGS>
+```
 
 ## Best Practices
 
-### 1. Hierarchy Discovery
-Before creating tasks or searching broadly, use `get_workspace_hierarchy` to understand the structure of Spaces, Folders, and Lists. This reduces ambiguity and helps you find the correct `listId`.
+### 1. Tool Minimization (`ENABLED_TOOLS`)
+Specialized agents should only enable the tools they need.
+- **Onboarding (Maya)**: `get_workspace_hierarchy,create_task,get_task`
+- **Ops/PM (Alaric)**: `get_tasks,update_task,add_time_entry,create_task_comment`
+- **Finance (Sterling)**: `get_tasks,get_task_comments` (for ROI analysis)
 
-### 2. Smart Task Lookup
-The premium server supports automatic name resolution. You can provide a task **Name** directly to tools like `get_task`, `update_task`, and `delete_task` instead of searching for an ID first.
+### 2. Hierarchy Discovery
+Before creating tasks, use `get_workspace_hierarchy` to understand the structure of Spaces, Folders, and Lists.
 
-### 3. Time Tracking
-- Use `start_time_tracking` to begin a timer.
-- Use `stop_time_tracking` to end it and get the entry details.
-- Use `add_time_entry` for manual logs.
-- Use `get_current_time_entry` to check if a timer is running.
-
-### 4. ClickUp Docs
-You can manage documents directly. Use `list_documents` to find existing docs and `create_document_page` to add content. The server supports `text/md` for markdown formatting.
-
-### 5. Feedback & Support
-If you encounter errors or missing features, proactively suggest using the `submit_feedback` tool. This generates a GitHub issue with relevant environment context.
+### 3. Smart Task Lookup
+The premium server supports automatic name resolution. You can provide a task **Name** directly to tools like `get_task` instead of searching for an ID first.
 
 ## Example Workflows
 
-### Creating a Task with Custom Fields
-1. Browse hierarchy to find the List ID.
-2. Resolve assignees if names are provided.
-3. Call `create_task` with `custom_fields` as `[{id, value}]`.
+### Maya: Processing a New Lead
+1. Read `TOOLS.md` for `CLICKUP_API_KEY`.
+2. Discover Hierarchy to find the "Consulting" space.
+3. Call `create_task` via `--stdio` with `ENABLED_TOOLS=create_task`.
 
-### Reporting Progress
-1. Get the task details (including markdown description).
-2. Add a comment using `create_task_comment` with markdown support.
-3. Log time spent using `add_time_entry`.
+### Alaric: Weekly Status Check
+1. Read `TOOLS.md` for `CLICKUP_TEAM_ID`.
+2. Call `get_tasks` via `--stdio` with `ENABLED_TOOLS=get_tasks,create_task_comment`.
+3. Add comments to overdue tasks.
