@@ -1,50 +1,61 @@
 ---
-name: clickup-premium
-description: "Advanced ClickUp integration for task management, time tracking, and document collaboration. Use when you need to: (1) Manage tasks, subtasks, and custom fields, (2) Track or log time, (3) Create or edit ClickUp Docs, (4) Communicate in chat channels. Trigger this skill to guide the user through credential configuration or to optimize complex ClickUp workflows."
+name: clickup-project-management
+description: "Professional-grade ClickUp orchestration for task automation, workspace hierarchy management, and team collaboration. Features auto-scoping and remote-first execution."
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "🏗️",
+        "requires": { "bins": ["mcporter", "python3"] },
+        "install":
+          [
+            {
+              "id": "node",
+              "kind": "node",
+              "package": "mcporter",
+              "bins": ["mcporter"],
+              "label": "Install mcporter",
+            },
+          ],
+      },
+  }
 ---
 
-# ClickUp MCP Premium
+# ClickUp Project Management Skill
 
-This skill enables deep integration with ClickUp using the premium MCP server. It is optimized for multi-agent environments using a **Dynamic stdio Mode** that ensures credential isolation.
+This skill provides a high-performance interface for managing ClickUp tasks, lists, and folders. It is designed to be **context-aware**, automatically pulling `CLICKUP_TEAM_ID` and `CLICKUP_OPERATIONS_LIST_ID` from your `TOOLS.md` if available.
 
-## Setup & Multi-Agent Configuration
+## Design Philosophy
 
-### 1. Agent-Specific Credentials (`TOOLS.md`)
-Every agent using this skill should have its specific credentials stored in its local `TOOLS.md` file:
-- `CLICKUP_API_KEY`: Personal API Key.
-- `CLICKUP_TEAM_ID`: The specific workspace/team ID.
-- `CLICKUP_MCP_LICENSE_KEY`: The premium license key.
-- `ENABLED_TOOLS`: (Optional) Comma-separated list of tools to enable.
+This skill is a **Tool Library**. It focuses on providing reliable access to the ClickUp API. Business-specific SOPs (e.g., "How we name our projects") should be defined in your `SOUL.md` or `AGENTS.md`.
 
-### 2. Calling Tools (The Launcher)
-To ensure isolation and proper environment loading, **ALWAYS** use the included launcher script. This script automatically reads your `TOOLS.md` and injects the variables into a one-shot `mcporter` session.
+## Tool Reference
 
-**Usage Pattern:**
-```bash
-python <skill_path>/scripts/call.py <TOOL_NAME> [ARGS]
-```
+Use the bundled launcher to execute tools. This ensures proper authentication and automatic fallback between remote (fast) and local (fallback) execution.
 
-**Example:**
-```bash
-python /Users/admin/.openclaw/skills/clickup-premium/scripts/call.py get_tasks teamId=9013667057
-```
+**Usage:** `python {baseDir}/scripts/call.py <TOOL_NAME> [ARGS]`
 
-## Best Practices
+### 1. Task Management
+- `get_tasks`: List tasks in a list/folder.
+- `create_task`: Create a new task (name, description, status).
+- `update_task`: Modify existing tasks.
+- `add_task_comment`: Post updates to a task.
 
-### 1. Hierarchy Discovery
-Before creating tasks, use `get_workspace_hierarchy` via the launcher to understand the structure of Spaces and Folders.
+### 2. Hierarchy & Structure
+- `get_workspace_hierarchy`: See all Spaces, Folders, and Lists.
+- `create_folder`: Organize your project workspace.
+- `create_list`: Create lists within folders or spaces.
 
-### 2. Smart Task Lookup
-The premium server supports automatic name resolution. You can provide a task **Name** directly to tools instead of searching for a numeric ID first.
+### 3. Intelligence & Analytics
+- `get_task_details`: Get full metadata for a specific task.
+- `get_list_details`: Inspect list-level configurations.
 
-### 3. Tool Minimization (`ENABLED_TOOLS`)
-Specialized agents should list only required tools in their `TOOLS.md` to minimize token overhead and increase reliability.
+## Automatic Scoping
+The launcher automatically checks your local `TOOLS.md` for the following keys:
+- `CLICKUP_TEAM_ID`: Used as default `teamId`.
+- `CLICKUP_OPERATIONS_LIST_ID`: Used as default `listId`.
 
-## Example Workflows
+This allows you to simply say "Create a task called Finish Report" without having to provide IDs every time.
 
-### Maya: Processing a New Lead
-1. Run `python <skill_path>/scripts/call.py create_task listId=... name="New Client"`
-2. The script handles the `npx` spawn and `TOOLS.md` parsing automatically.
-
-### Alaric: Status Update
-1. Run `python <skill_path>/scripts/call.py create_task_comment taskId=... comment="Task in progress"`
+## Configuration
+Requires `CLICKUP_API_KEY` to be set in your `openclaw.json` or process environment.

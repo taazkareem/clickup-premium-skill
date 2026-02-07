@@ -2,6 +2,8 @@ import os
 import sys
 import subprocess
 import re
+import shlex
+import json
 
 def main():
     if len(sys.argv) < 2:
@@ -9,58 +11,104 @@ def main():
         sys.exit(1)
 
     tool_name = sys.argv[1]
-    tool_args = " ".join(sys.argv[2:])
+    raw_args = sys.argv[2:]
 
-    # Path to the agent's TOOLS.md
+    # --- Step 1: Resolve Operational Metadata (Business Scoping) ---
+    metadata = {}
     tools_md_path = os.path.join(os.getcwd(), 'TOOLS.md')
-    
-    # Default env vars
-    env_vars = {}
-    
-    # Try to extract variables from TOOLS.md
     if os.path.exists(tools_md_path):
         with open(tools_md_path, 'r') as f:
             content = f.read()
-            
-            # Pattern matching for CLICKUP_ keys and ENABLED_TOOLS
-            patterns = [
-                r'CLICKUP_API_KEY[:=]\s*([^\s\n]+)',
-                r'CLICKUP_TEAM_ID[:=]\s*([^\s\n]+)',
-                r'CLICKUP_MCP_LICENSE_KEY[:=]\s*([^\s\n]+)',
-                r'ENABLED_TOOLS[:=]\s*([^\s\n]+)'
-            ]
-            
-            for p in patterns:
+            patterns = {
+                'teamId': r'CLICKUP_TEAM_ID[:=]\s*([^\s\n]+)',
+                'listId': r'CLICKUP_OPERATIONS_LIST_ID[:=]\s*([^\s\n]+)'
+            }
+            for key, p in patterns.items():
                 match = re.search(p, content)
                 if match:
-                    key = p.split('[:=]')[0]
-                    env_vars[key] = match.group(1).strip()
+                    metadata[key] = match.group(1).strip()
 
-    # Base command
+    # --- Step 2: Resolve Security Credentials (System Scoping) ---
+    # Injected by OpenClaw from skills.entries.clickup-premium.env
+    env_vars = {}
+    for key in ['CLICKUP_API_KEY', 'CLICKUP_TEAM_ID', 'CLICKUP_MCP_LICENSE_KEY', 'ENABLED_TOOLS']:
+        val = os.getenv(key)
+        if val:
+            env_vars[key] = val
+
+    # --- Step 3: Execution Logic ---
+    # Priority 1: Remote HTTP Version (High Performance)
+    remote_url = "https://clickup-mcp.taazkareem.com/mcp"
+    server_name = os.getenv('CLICKUP_MCP_SERVER_NAME', 'clickup-premium')
+    
+    if env_vars.get('CLICKUP_API_KEY'):
+        try:
+            # Sync mcporter config for the remote server with correct headers
+            config_cmd = [
+                'mcporter', 'config', 'add', server_name,
+                '--url', remote_url,
+                '--header', f'X-ClickUp-Key={env_vars["CLICKUP_API_KEY"]}',
+                '--header', f'X-ClickUp-Team-Id={env_vars.get("CLICKUP_TEAM_ID", "")}',
+                '--header', f'X-License-Key={env_vars.get("CLICKUP_MCP_LICENSE_KEY", "")}',
+                '--header', 'accept=application/json, text/event-stream',
+                '--scope', 'home', '--yes'
+            ]
+            
+            # Handle sandbox test license
+            if env_vars.get("CLICKUP_MCP_LICENSE_KEY", "").startswith("CTEST-"):
+                config_cmd.extend(['--header', 'X-Sandbox-Secret=clickup-sandbox-test'])
+
+            # Add token optimization header
+            if env_vars.get('ENABLED_TOOLS'):
+                config_cmd.extend(['--header', f'X-Enabled-Tools={env_vars["ENABLED_TOOLS"]}'])
+            
+            subprocess.run(config_cmd, capture_output=True, check=True)
+            
+            # Call the tool
+            cmd = ['mcporter', 'call', server_name, tool_name]
+            
+            # Auto-inject operational metadata as tool arguments if missing
+            current_arg_keys = [a.split('=')[0] for a in raw_args if '=' in a]
+            for m_key, m_val in metadata.items():
+                if m_key not in current_arg_keys:
+                    cmd.append(f"{m_key}={m_val}")
+            
+            cmd.extend(raw_args)
+            
+            print(f"Executing (Remote): {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                print(result.stdout)
+                sys.exit(0)
+            else:
+                print(f"Remote failed, falling back to local...")
+        except Exception as e:
+            # Silent fallback to stdio on configuration failure
+            pass
+
+    # Priority 2: Standard stdio fallback (The "Agnostic" Path)
     cmd = ['mcporter', 'call', '--stdio', 'npx -y @taazkareem/clickup-mcp-server']
     
-    # Add env flags
+    # Inject standard ClickUp environment variables from the agent environment
     for k, v in env_vars.items():
         cmd.extend(['--env', f'{k}={v}'])
-    
-    # Add tool name
+
     cmd.append(tool_name)
     
-    # Add tool args if any
-    if tool_args:
-        # Simple splitting of args for the subprocess call
-        # In real usage, the agent might pass them as key=value
-        import shlex
-        cmd.extend(shlex.split(tool_args))
-
-    print(f"Executing: {' '.join(cmd)}")
+    # Inject metadata as arguments
+    current_arg_keys = [a.split('=')[0] for a in raw_args if '=' in a]
+    for m_key, m_val in metadata.items():
+        if m_key not in current_arg_keys:
+            cmd.append(f"{m_key}={m_val}")
     
+    cmd.extend(raw_args)
+
+    print(f"Executing (Local): {' '.join(cmd)}")
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0:
-            print(result.stdout)
-        else:
-            print(f"Error: {result.stderr}")
+        print(result.stdout)
+        if result.returncode != 0:
+            print(result.stderr)
             sys.exit(result.returncode)
     except Exception as e:
         print(f"Execution failed: {str(e)}")
