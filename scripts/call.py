@@ -54,10 +54,6 @@ def main():
                 '--scope', 'home', '--yes'
             ]
             
-            # Handle sandbox test license
-            if env_vars.get("CLICKUP_MCP_LICENSE_KEY", "").startswith("CTEST-"):
-                config_cmd.extend(['--header', 'X-Sandbox-Secret=clickup-sandbox-test'])
-
             # Add token optimization header
             if env_vars.get('ENABLED_TOOLS'):
                 config_cmd.extend(['--header', f'X-Enabled-Tools={env_vars["ENABLED_TOOLS"]}'])
