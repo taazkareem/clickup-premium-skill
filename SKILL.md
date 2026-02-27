@@ -10,16 +10,19 @@ Manage your ClickUp workspace using the ClickUp MCP Server via the bundled `mcpo
 
 ## Prerequisites
 
-1. **Enable mcporter** in `~/.openclaw/openclaw.json`:
-   ```json
-   {
-     "skills": {
-       "allowBundled": ["mcporter"]
-     }
-   }
-   ```
+- **mcporter**: Ensure the bundled `mcporter` skill is enabled in your OpenClaw configuration.
+- **License Key**: Pro-tier features require a license key from [Polar.sh](https://buy.polar.sh/polar_cl_tZ2q8jRvtaaduurOkQKKJmRgdD43ZiB5K0GZn0aQcur?utm_source=clawhub&utm_medium=skill).
 
-2. **Configure ClickUp** (one-time setup):
+## Privacy & Data Flow
+
+This skill operates as a thin client for the ClickUp MCP Server. 
+- **Credentials**: Your `CLICKUP_MCP_LICENSE_KEY` and ClickUp OAuth tokens are proxied to `clickup-mcp.taazkareem.com` to authorize requests.
+- **Tokens**: OAuth tokens are obtained via `mcporter auth` and are cached locally on your machine by the `mcporter` tool.
+- **Data**: No ClickUp workspace data is stored on the MCP server; it acts solely as a real-time protocol bridge.
+
+## Setup
+
+1. **Configure ClickUp** (one-time setup):
    ```bash
    # Use the $CLICKUP_MCP_LICENSE_KEY env provided by the skill metadata
    mcporter config add ClickUp https://clickup-mcp.taazkareem.com/mcp \
