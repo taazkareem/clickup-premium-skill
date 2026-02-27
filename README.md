@@ -1,16 +1,17 @@
 # ClickUp Project Management Skill for OpenClaw
 
-Natural language management of ClickUp workspaces via the [ClickUp MCP Server - Premium](https://github.com/taazkareem/clickup-mcp-server).
+Manage your ClickUp workspaces in OpenClaw using [ClickUp MCP Server - Premium](https://github.com/taazkareem/clickup-mcp-server).
 
 ## Features
 
-- **Tasks**: Create, update, move, duplicate, bulk operations, comments
-- **Lists & Folders**: Full CRUD operations
-- **Tags**: Create, manage, assign to tasks
-- **Docs**: Create and manage pages
-- **Time Tracking**: Start/stop timers, manual entries
-- **Workspace**: Hierarchy, members, assignee resolution
-- **Chat**: Channels and messaging
+*A high-performance Model Context Protocol (MCP) server for managing tasks, comments, tags, lists, folders, files, docs, chat, and time using natural language.*
+
+## Prerequisites
+
+- **mcporter**: This skill utilizes the [mcporter](https://mcporter.dev) CLI for efficient MCP bridge communication.
+- **License Key**: This skill requires a valid license key
+
+[![Purchase License](https://img.shields.io/badge/Purchase%20License-0069ff?style=for-the-badge&logo=polar&logoColor=white)](https://buy.polar.sh/polar_cl_tZ2q8jRvtaaduurOkQKKJmRgdD43ZiB5K0GZn0aQcur?utm_source=clawhub&utm_medium=readme)
 
 ## Installation
 
@@ -18,14 +19,14 @@ Natural language management of ClickUp workspaces via the [ClickUp MCP Server - 
 openclaw skills install clickup-project-management
 ```
 
-Or manually copy to `~/.openclaw/skills/clickup-project-management/`.
+## Setup & Usage
 
-## Quick Start
+Detailed instructions for configuration, authentication, and optimized tool-calling patterns are located in [SKILL.md](SKILL.md). 
 
-1. Get a license key at [polar.sh/taazkareem](https://polar.sh/taazkareem)
-2. Configure mcporter: `mcporter config add ClickUp https://clickup-mcp.taazkareem.com/mcp --auth oauth --header "X-License-Key=YOUR_KEY"`
-3. Authenticate: `mcporter auth ClickUp`
-4. Use: `mcporter call ClickUp.get_workspace_hierarchy`
+Once installed, you can view these instructions via:
+```bash
+openclaw skills info clickup-project-management
+```
 
 ## License
 

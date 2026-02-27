@@ -1,6 +1,6 @@
 ---
 name: clickup-project-management
-description: Manage ClickUp workspaces via the ClickUp MCP Server. Create and update tasks, lists, folders, tags, docs, track time, and use chat — all via natural language.
+description: Manage tasks, comments, tags, lists, folders, files, docs, chat, and time using natural language.
 metadata:
   {
     "openclaw":
