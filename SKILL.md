@@ -50,6 +50,8 @@ Manage your ClickUp workspace using the ClickUp MCP Server via `mcporter`.
 
 ## Optimization: Tool Filtering Personas
 
+<!-- Last updated: v0.12.14 -->
+
 To reduce context noise and improve AI accuracy, you can limit the tools available to your agent using the `X-Enabled-Tools` header in your `mcporter` config.
 Important: If applicable, attempt to match the agent's persona to one of the presets below or create your own custom set based on the chat session history and the user's intent.
 
