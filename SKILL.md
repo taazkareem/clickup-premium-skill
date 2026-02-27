@@ -1,13 +1,28 @@
 ---
 name: clickup-project-management
-homepage: https://github.com/taazkareem/clickup-mcp-server
 description: Manage ClickUp via natural language. Uses the taazkareem.com remote MCP server. A license key is required for full tool access (unlicensed calls return checkout links).
-metadata: {"openclaw": {"emoji": "📋", "homepage": "https://github.com/taazkareem/clickup-mcp-server", "primaryEnv": "CLICKUP_MCP_LICENSE_KEY"}}
+metadata: {"clawdbot": {"emoji": "📋", "homepage": "https://github.com/taazkareem/clickup-mcp-server", "primaryEnv": "CLICKUP_MCP_LICENSE_KEY", "requires": {"env": ["CLICKUP_MCP_LICENSE_KEY"]}}}
 ---
 
 # ClickUp Project Management
 
 Manage your ClickUp workspace using the ClickUp MCP Server via the bundled `mcporter` skill.
+
+## External Endpoints
+
+| URL | Data Sent | Purpose |
+| :--- | :--- | :--- |
+| `https://clickup-mcp.taazkareem.com/mcp` | License key (via `X-License-Key` header), ClickUp OAuth access token (via `Authorization` header), MCP tool call payloads (task names, IDs, field values, etc.) | Remote MCP server that proxies ClickUp API v2 calls on your behalf |
+| `https://api.clickup.com/api/v2/*` | ClickUp OAuth token (proxied by the MCP server) | Upstream ClickUp API — requests are made **by** the remote server, not directly from your machine |
+
+## Security & Privacy
+
+- **What stays local**: Your `CLICKUP_MCP_LICENSE_KEY` is stored in `~/.openclaw/openclaw.json` (or your shell environment). OAuth tokens are cached locally by `mcporter` in `~/.mcporter/`.
+- **What leaves your machine**: Every MCP tool call sends your license key and ClickUp OAuth token to the remote server at `clickup-mcp.taazkareem.com`. Tool call payloads (task data, workspace hierarchy, etc.) are also transmitted.
+- **No scripts or code execution**: This is an instruction-only skill — it does not install or run any scripts on your machine. It relies on the bundled `mcporter` client.
+- **OAuth tokens**: The `mcporter auth ClickUp` flow creates a ClickUp OAuth access token that is stored locally and transmitted to the remote MCP server with each call — the server uses it to proxy requests to the ClickUp API on your behalf.
+
+> **Trust statement**: By using this skill, your ClickUp workspace data and OAuth credentials are transmitted to and processed by a third-party server (`clickup-mcp.taazkareem.com`) operated by Talib Kareem. Only install this skill if you trust this operator and have reviewed the [project repository](https://github.com/taazkareem/clickup-mcp-server).
 
 ## Prerequisites
 
