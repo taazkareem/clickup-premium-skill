@@ -1,4 +1,4 @@
-# ClickUp Project Management Skill for OpenClaw
+# ClickUp OpenClaw Skill
 
 Manage your ClickUp workspaces in OpenClaw using [ClickUp MCP Server - Premium](https://github.com/taazkareem/clickup-mcp-server).
 
