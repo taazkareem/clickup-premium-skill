@@ -1,7 +1,7 @@
 ---
 name: clickup-project-management
-description: Manage ClickUp via natural language. Uses the taazkareem.com remote MCP server. Requires a license key.
-metadata: {"openclaw": {"emoji": "📋", "homepage": "https://github.com/taazkareem/clickup-project-management", "requires": {"env": ["CLICKUP_MCP_LICENSE_KEY"]}, "primaryEnv": "CLICKUP_MCP_LICENSE_KEY"}}
+description: Manage ClickUp via natural language. Uses the taazkareem.com remote MCP server. A license key is required for full tool access (unlicensed calls return checkout links).
+metadata: {"openclaw": {"emoji": "📋", "homepage": "https://github.com/taazkareem/clickup-project-management", "primaryEnv": "CLICKUP_MCP_LICENSE_KEY"}}
 ---
 
 # ClickUp Project Management
