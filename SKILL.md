@@ -1,24 +1,7 @@
 ---
 name: clickup-project-management
 description: Manage tasks, comments, tags, lists, folders, files, docs, chat, and time using natural language.
-metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "🏗️",
-        "requires": { "bins": ["mcporter"] },
-        "install":
-          [
-            {
-              "id": "node",
-              "kind": "node",
-              "package": "mcporter",
-              "bins": ["mcporter"],
-              "label": "Install mcporter",
-            },
-          ],
-      },
-  }
+metadata: {"openclaw": {"emoji": "🏗️", "homepage": "https://github.com/taazkareem/clickup-project-management", "requires": {"bins": ["mcporter"]}, "install": [{"id": "node", "kind": "node", "package": "mcporter", "bins": ["mcporter"], "label": "Install mcporter"}]}}
 ---
 
 # ClickUp Project Management
