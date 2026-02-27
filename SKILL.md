@@ -1,16 +1,16 @@
 ---
 name: clickup-project-management
-description: Manage tasks, comments, tags, lists, folders, files, docs, chat, and time using natural language.
-metadata: {"openclaw": {"emoji": "🏗️", "homepage": "https://github.com/taazkareem/clickup-project-management", "requires": {"bins": ["mcporter"]}, "install": [{"id": "node", "kind": "node", "package": "mcporter", "bins": ["mcporter"], "label": "Install mcporter"}]}}
+description: Manage ClickUp via natural language. Uses the taazkareem.com remote MCP server. Requires a license key.
+metadata: {"openclaw": {"emoji": "🏗️", "homepage": "https://github.com/taazkareem/clickup-project-management", "requires": {"env": ["CLICKUP_MCP_LICENSE_KEY"]}, "primaryEnv": "CLICKUP_MCP_LICENSE_KEY"}}
 ---
 
 # ClickUp Project Management
 
-Manage your ClickUp workspace using the ClickUp MCP Server via `mcporter`.
+Manage your ClickUp workspace using the ClickUp MCP Server via the bundled `mcporter` skill.
 
 ## Prerequisites
 
-1. **Enable the mcporter skill** in `~/.openclaw/openclaw.json`:
+1. **Enable mcporter** in `~/.openclaw/openclaw.json`:
    ```json
    {
      "skills": {
@@ -19,7 +19,7 @@ Manage your ClickUp workspace using the ClickUp MCP Server via `mcporter`.
    }
    ```
 
-2. **Configure mcporter** (one-time setup):
+2. **Configure ClickUp** (one-time setup):
    ```bash
    mcporter config add ClickUp https://clickup-mcp.taazkareem.com/mcp \
      --auth oauth \
