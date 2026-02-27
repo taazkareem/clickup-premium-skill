@@ -8,7 +8,6 @@ Manage your ClickUp workspaces in OpenClaw using [ClickUp MCP Server - Premium](
 
 ## Prerequisites
 
-- **mcporter**: This skill utilizes the [mcporter](https://mcporter.dev) CLI for efficient MCP bridge communication.
 - **License Key**: This skill requires a valid license key
 
 [![Purchase License](https://img.shields.io/badge/Purchase%20License-0069ff?style=for-the-badge&logo=polar&logoColor=white)](https://buy.polar.sh/polar_cl_tZ2q8jRvtaaduurOkQKKJmRgdD43ZiB5K0GZn0aQcur?utm_source=clawhub&utm_medium=readme)
